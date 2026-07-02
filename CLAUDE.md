@@ -38,7 +38,7 @@ CoTrace 是一個以「求才方」為主動、透過名片交換機制建立經
 | 跳過（Skip，30 天內不再出現） | ✅ 已實作 | 邏輯建議再核對是否滿足 30 天規則 |
 | 對話（Chat） | ✅ 已實作 | `UnlockRequestBubble` 對應 PRD 4.6「請求個資揭露」；⚠️ 無「邀約面談」按鈕 |
 | 名片夾（Talent pool） | ✅ 已實作 | ⚠️ 無 200 張上限、無黑名單容量限制 |
-| **需求名片（Job Card）** | ❌ 未實作 | PRD 6.2 全新模組，需求名片的建立/管理/欄位皆不存在 |
+| **需求名片（Job Card）** | ✅ 已實作 | PRD 6.2，設定頁「需求名片」卡片 → `JobCardManagerSheet`（清單／新增／編輯／刪除，上限 10 張）→ `JobCardFormDialog`（8 個欄位表單）；欄位選項見 `data/jobCardOptions.js`，與人選名片的對應欄位選項刻意分開維護，數值不同 |
 | **探索視角切換**（我是人才／我想求才） | ❌ 未實作 | PRD 6.3，`ExplorePage` 目前只有單一視角 |
 | **關注（Follow）** | ❌ 未實作 | PRD 6.4，作用於需求名片、會觸發通知，與「收藏」是不同機制 |
 | **通知系統重構** | ✅ 已實作 | PRD 6.5，`/invites` 頁面已改標題【通知】、底部導覽/側邊欄改鈴鐺 icon，拆「邀請/已邀請/關注」三子頁籤；「已邀請」子頁籤新增 `sentInvites` 狀態才有真實資料（見下方 action 清單）；「關注」子頁籤目前僅空狀態骨架，待 PRD 6.4 關注機制與 6.2 需求名片完成後才有資料來源 |
@@ -135,6 +135,8 @@ npm run preview   # 預覽 build 產出
   `pending`，UI 顯示「邀請中」）
 - 聊天：`ADD_MESSAGE`、`SET_THREAD_READ`、`SET_THREAD_UNLOCK`
 - 設置：`SET_CONTACT_DATA`、`SET_VERIFIED`、`SET_PERMISSION`
+- 需求名片：`ADD_JOB_CARD`（超過 `MAX_JOB_CARDS` 上限時忽略，UI 也會先擋）、
+  `UPDATE_JOB_CARD`、`DELETE_JOB_CARD`
 
 **如何新增一個狀態區塊**：在 `initialState.js` 加初始值 → 在 `appReducer.js` 加對應的
 `case` 分支 → 在需要的元件用 `useAppState()` 讀取、`useAppDispatch()` 觸發 action。
@@ -290,7 +292,8 @@ server/         Email 帳號登入用的後端 API（Express + MySQL），見上
 | `values.js` | 4 組價值觀分類標籤 |
 | `workStyleQuestions.js` | 工作風格問卷（6 題） |
 | `workModeOptions.js` / `workTimeOptions.js` | 工作模式／工作時段選項 |
-| `careerLevels.js` | 職涯落點選項 |
+| `careerLevels.js` | 職涯落點選項（人選名片用，含括號說明） |
+| `jobCardOptions.js` | 需求名片（Job Card）用的工作模式／時程／職涯落點選項＋`MAX_JOB_CARDS` 上限常數，數值與 `careerLevels.js`／`workModeOptions.js` 不同（PRD 6.2.1 與 4.2.1 本來就是兩組不同選項） |
 | `rejectReasons.js` | 婉拒邀請的固定原因清單 |
 | `folderDefaults.js` | 名片夾預設資料夾名稱 |
 | `emailDomains.js` / `areaCodes.js` | 聯絡資料表單用的下拉選單資料 |
@@ -337,11 +340,9 @@ server/         Email 帳號登入用的後端 API（Express + MySQL），見上
 
 ### PRD 0.9.0 新功能（尚未排入開發，見上方「PRD 對照與目前實作範圍」）
 
-- **需求名片（Job Card）**：新資料結構＋建立/編輯/刪除管理介面（設定頁「管理需求名片」，
-  上限 10 張／帳號）
 - **探索視角切換**：探索頁左上角切換【我是人才(探索需求)】／【我想求才(探索人才)】，
   兩種視角的篩選欄位與卡片顯示內容不同，需要重新設計 `FilterDrawer`／`TalentCard` 的
-  資料模型使其可切換
+  資料模型使其可切換；視角切到「我是人才」後瀏覽的就是已完成的需求名片（Job Card）
 - **關注機制**：作用於需求名片，觸發通知，與現有「收藏」是不同機制，需分開實作；
   `/invites`「關注」子頁籤已有 UI 骨架，待這項完成後才有資料來源
 - **面談與評分機制**：風險警示徽章（名片詳情頁＋探索卡片右上角，綠/黃/紅三色）、

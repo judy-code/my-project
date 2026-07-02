@@ -36,13 +36,26 @@
   - 同步更新 `Design.md` 圖示對照表、`CLAUDE.md` 路由表／落差表／action 清單
   - `npm run lint` + `npm run build` 皆過
 
+## 2026-07-02（續 3）
+
+- **需求名片（Job Card）（已完成）**：
+  - 新增 `data/jobCardOptions.js`：`JOB_WORK_MODE_OPTIONS`／`JOB_TIMELINE_OPTIONS`／
+    `JOB_CAREER_LEVELS`／`MAX_JOB_CARDS`（=10），刻意跟人選名片既有的
+    `workModeOptions.js`／`careerLevels.js` 分開，因為 PRD 6.2.1 跟 4.2.1 選項數值本來就不同
+    （例如需求名片工作模式多了「合約／合夥」）
+  - `state`：新增 `jobCards: []` + `blankJobCardData()`，reducer 加 `ADD_JOB_CARD`
+    （超過上限忽略）/`UPDATE_JOB_CARD`/`DELETE_JOB_CARD`
+  - UI：設定頁新增 `JobCardCard`（顯示張數、開管理入口）→ `JobCardManagerSheet`
+    （清單/刪除/開新增編輯）→ `JobCardFormDialog`（8 欄位表單，草稿+送出才寫回的模式，
+    跟 `BuildWizard`/`ContactEditDialog` 一致）
+  - `npm run lint` + `npm run build` 皆過；同步更新 `CLAUDE.md` 落差表/action 清單/模擬資料清單
+
 ## 下一步待完成（建議優先順序，細節見 `CLAUDE.md` →「PRD 對照與目前實作範圍」）
 
-1. **需求名片（Job Card）**：新資料結構 + 設定頁「管理需求名片」CRUD（上限 10 張）
-2. **探索視角切換**：探索頁左上角切換【我是人才】/【我想求才】，需重新設計 `FilterDrawer`/`TalentCard` 資料模型
-3. **關注機制**：作用於需求名片，觸發通知，依賴第 1 項先完成，UI 骨架（`/invites`「關注」頁籤）已就緒
-4. **面談與評分機制**：風險徽章 + 面談邀請卡片 + 多維度評分問卷 —— 量體最大，PRD 第五章整章，建議排最後
-5. 補規則類小項：邀請每日額度限制、名片夾 200 張上限、黑名單容量
+1. **探索視角切換**：探索頁左上角切換【我是人才】/【我想求才】，需重新設計 `FilterDrawer`/`TalentCard` 資料模型；切到「我是人才」視角瀏覽的就是剛做好的需求名片（Job Card）
+2. **關注機制**：作用於需求名片，觸發通知，依賴第 1 項先完成，UI 骨架（`/invites`「關注」頁籤）已就緒
+3. **面談與評分機制**：風險徽章 + 面談邀請卡片 + 多維度評分問卷 —— 量體最大，PRD 第五章整章，建議排最後
+4. 補規則類小項：邀請每日額度限制、名片夾 200 張上限、黑名單容量
 
 ## 尚未確認事項（需要跟 PM/使用者再對齊）
 
