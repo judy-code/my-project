@@ -1,0 +1,37 @@
+import { useNavigate } from 'react-router-dom'
+import { Badge } from '@/components/ui/badge'
+import { AppAvatar } from '@/components/common/AppAvatar'
+
+export function TalentCard({ talent }) {
+  const navigate = useNavigate()
+
+  return (
+    <button
+      type="button"
+      onClick={() => navigate(`/explore/${talent.id}`)}
+      className="w-full rounded-xl border border-border p-4 text-left transition-colors hover:border-primary"
+    >
+      <div className="mb-2.5 flex items-start gap-3">
+        <AppAvatar name={talent.name} initial={talent.ini} colorIndex={talent.ai} size={44} />
+        <div className="min-w-0 flex-1">
+          <div className="text-[15px] font-medium">
+            {talent.name} <span className="text-xs font-medium text-primary">#{talent.code}</span>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {talent.title} · {talent.level}
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {talent.company} · {talent.lang.join(' / ')}
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {talent.skills.map((s) => (
+          <Badge key={s} variant="secondary">
+            {s}
+          </Badge>
+        ))}
+      </div>
+    </button>
+  )
+}
