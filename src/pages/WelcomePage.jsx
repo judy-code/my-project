@@ -30,24 +30,16 @@ function GoogleIcon() {
   )
 }
 
-export default function WelcomePage() {
-  const dispatch = useAppDispatch()
-  const navigate = useNavigate()
+// 只有設定好 VITE_GOOGLE_CLIENT_ID 才會 mount 這個元件，避免 useGoogleLogin 在
+// client_id 是空字串時對 Google SDK 初始化，一初始化就丟出例外把整個 App 炸掉
+function GoogleLoginButton({ onSuccess }) {
   const [signingIn, setSigningIn] = useState(false)
-  const [emailAuthOpen, setEmailAuthOpen] = useState(false)
-
-  const enterApp = (loggedIn, target, user) => {
-    dispatch({ type: 'ENTER_APP', loggedIn, user })
-    navigate(target)
-  }
-
-  const handleEmailAuthSuccess = (user) => enterApp(true, '/build', user)
 
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
         const profile = await fetchGoogleProfile(tokenResponse.access_token)
-        enterApp(true, '/build', profile)
+        onSuccess(profile)
       } catch {
         toast.error('登入失敗，請稍後再試')
       } finally {
@@ -61,14 +53,49 @@ export default function WelcomePage() {
     onNonOAuthError: () => setSigningIn(false),
   })
 
-  const handleGoogleLogin = () => {
-    if (!isGoogleLoginConfigured) {
-      toast.error('尚未設定 Google 登入，請洽系統管理員')
-      return
-    }
-    setSigningIn(true)
-    googleLogin()
+  return (
+    <Button
+      className="mb-3 w-full gap-2.5 text-[15px]"
+      variant="outline"
+      size="lg"
+      disabled={signingIn}
+      onClick={() => {
+        setSigningIn(true)
+        googleLogin()
+      }}
+    >
+      <GoogleIcon />
+      {signingIn ? '登入中…' : '以 Google 帳號登入'}
+    </Button>
+  )
+}
+
+function GoogleLoginDisabledButton() {
+  return (
+    <Button
+      className="mb-3 w-full gap-2.5 text-[15px]"
+      variant="outline"
+      size="lg"
+      onClick={() => toast.error('尚未設定 Google 登入，請洽系統管理員')}
+    >
+      <GoogleIcon />
+      以 Google 帳號登入
+    </Button>
+  )
+}
+
+export default function WelcomePage() {
+  const dispatch = useAppDispatch()
+  const navigate = useNavigate()
+  const [emailAuthOpen, setEmailAuthOpen] = useState(false)
+
+  const enterApp = (loggedIn, target, user) => {
+    dispatch({ type: 'ENTER_APP', loggedIn, user })
+    navigate(target)
   }
+
+  const handleEmailAuthSuccess = (user) => enterApp(true, '/build', user)
+  const handleGoogleAuthSuccess = (profile) => enterApp(true, '/build', profile)
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-sm flex-col items-center justify-center px-8 py-10">
@@ -85,16 +112,11 @@ export default function WelcomePage() {
         </div>
       </div>
 
-      <Button
-        className="mb-3 w-full gap-2.5 text-[15px]"
-        variant="outline"
-        size="lg"
-        disabled={signingIn}
-        onClick={handleGoogleLogin}
-      >
-        <GoogleIcon />
-        {signingIn ? '登入中…' : '以 Google 帳號登入'}
-      </Button>
+      {isGoogleLoginConfigured ? (
+        <GoogleLoginButton onSuccess={handleGoogleAuthSuccess} />
+      ) : (
+        <GoogleLoginDisabledButton />
+      )}
       <Button
         className="mb-3 w-full text-[15px]"
         variant="outline"
