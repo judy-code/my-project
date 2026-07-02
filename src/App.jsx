@@ -4,6 +4,7 @@ import WelcomePage from '@/pages/WelcomePage'
 import BuildPage from '@/pages/BuildPage'
 import ExplorePage from '@/pages/ExplorePage'
 import TalentDetailPage from '@/pages/TalentDetailPage'
+import JobPostDetailPage from '@/pages/JobPostDetailPage'
 import InvitesPage from '@/pages/InvitesPage'
 import CardBoxPage from '@/pages/CardBoxPage'
 import ChatPage from '@/pages/ChatPage'
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/build" element={<BuildPage />} />
         <Route path="/explore" element={<ExplorePage />}>
           <Route path=":talentId" element={<TalentDetailPage />} />
+          <Route path="job/:jobId" element={<JobPostDetailPage />} />
         </Route>
         <Route path="/invites" element={<InvitesPage />} />
         <Route path="/cardbox" element={<CardBoxPage />} />

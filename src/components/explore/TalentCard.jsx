@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
 import { AppAvatar } from '@/components/common/AppAvatar'
 
-export function TalentCard({ talent }) {
+export function TalentCard({ talent, isFollower }) {
   const navigate = useNavigate()
 
   return (
@@ -17,6 +17,7 @@ export function TalentCard({ talent }) {
           <div className="text-[15px] font-medium">
             {talent.name} <span className="text-xs font-medium text-primary">#{talent.code}</span>
           </div>
+          {isFollower && <div className="text-xs font-medium text-primary">關注了你的需求名片</div>}
           <div className="text-sm text-muted-foreground">
             {talent.title} · {talent.level}
           </div>

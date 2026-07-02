@@ -5,6 +5,7 @@ import { PermissionRadioCard } from '@/components/settings/PermissionRadioCard'
 import { AccountCard } from '@/components/settings/AccountCard'
 import { CardBoxSummaryCard } from '@/components/settings/CardBoxSummaryCard'
 import { JobCardCard } from '@/components/settings/JobCardCard'
+import { FollowedJobsCard } from '@/components/settings/FollowedJobsCard'
 import { ContactEditDialog } from '@/components/settings/ContactEditDialog'
 
 export default function SettingsPage() {
@@ -22,6 +23,7 @@ export default function SettingsPage() {
         <AccountCard />
         <CardBoxSummaryCard />
         <JobCardCard />
+        <FollowedJobsCard />
       </div>
       <ContactEditDialog open={contactOpen} onOpenChange={setContactOpen} />
     </div>

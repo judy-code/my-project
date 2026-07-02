@@ -6,7 +6,8 @@ import { PerspectiveSwitcher } from '@/components/explore/PerspectiveSwitcher'
 import { useAppState } from '@/hooks/useAppState'
 
 export default function ExplorePage() {
-  const match = useMatch('/explore/:talentId')
+  const talentMatch = useMatch('/explore/:talentId')
+  const jobMatch = useMatch('/explore/job/:jobId')
   const { explorePerspective } = useAppState()
 
   return (
@@ -21,7 +22,7 @@ export default function ExplorePage() {
           </div>
         </div>
       }
-      detailActive={!!match}
+      detailActive={!!talentMatch || !!jobMatch}
       emptyState="選擇左側名片以查看詳情"
     >
       <Outlet />

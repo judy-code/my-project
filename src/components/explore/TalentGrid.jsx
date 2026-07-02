@@ -3,7 +3,7 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { TalentCard } from './TalentCard'
 
 export function TalentGrid() {
-  const { talentPool, filterState } = useAppState()
+  const { talentPool, filterState, receivedFollows } = useAppState()
 
   const list = talentPool.filter((t) => {
     if (filterState.titleKw) {
@@ -19,12 +19,17 @@ export function TalentGrid() {
     return true
   })
 
-  if (!list.length) return <EmptyState text="沒有符合條件的人才" />
+  // PRD 6.4.2：優先顯示篩選相符的關注人才。「除非已跳過」已經被上面的 filter 涵蓋，
+  // 因為跳過會把人才從 talentPool 整個移除，不會出現在 list 裡
+  const followedIds = new Set(receivedFollows.map((f) => f.talentId))
+  const sorted = [...list].sort((a, b) => Number(followedIds.has(b.id)) - Number(followedIds.has(a.id)))
+
+  if (!sorted.length) return <EmptyState text="沒有符合條件的人才" />
 
   return (
     <div className="grid grid-cols-1 gap-3 p-4 md:grid-cols-2 md:p-6 lg:grid-cols-1">
-      {list.map((t) => (
-        <TalentCard key={t.id} talent={t} />
+      {sorted.map((t) => (
+        <TalentCard key={t.id} talent={t} isFollower={followedIds.has(t.id)} />
       ))}
     </div>
   )

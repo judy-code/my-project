@@ -4,6 +4,7 @@ import { useAppState } from '@/hooks/useAppState'
 import { EmptyState } from '@/components/common/EmptyState'
 import { InviteRow } from '@/components/invites/InviteRow'
 import { SentInviteRow } from '@/components/invites/SentInviteRow'
+import { FollowNotificationRow } from '@/components/invites/FollowNotificationRow'
 
 const TABS = [
   { value: 'received', label: '邀請' },
@@ -12,7 +13,7 @@ const TABS = [
 ]
 
 export default function InvitesPage() {
-  const { invites, sentInvites } = useAppState()
+  const { invites, sentInvites, receivedFollows } = useAppState()
   const [tab, setTab] = useState('received')
   const pending = invites.filter((i) => i.status === 'pending')
   const done = invites.filter((i) => i.status !== 'pending')
@@ -62,7 +63,11 @@ export default function InvitesPage() {
         </TabsContent>
 
         <TabsContent value="follow" className="min-h-0 flex-1 overflow-y-auto px-4 md:px-8">
-          <EmptyState text="尚無關注通知" />
+          {!receivedFollows.length ? (
+            <EmptyState text="尚無關注通知" />
+          ) : (
+            receivedFollows.map((f) => <FollowNotificationRow key={f.id} follow={f} />)
+          )}
         </TabsContent>
       </Tabs>
     </div>
