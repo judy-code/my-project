@@ -1,5 +1,6 @@
 import { useAppState } from '@/hooks/useAppState'
 import { EmptyState } from '@/components/common/EmptyState'
+import { staggerDelay } from '@/lib/utils'
 import { JobPostCard } from './JobPostCard'
 
 export function JobPostGrid() {
@@ -21,8 +22,10 @@ export function JobPostGrid() {
 
   return (
     <div className="grid grid-cols-1 gap-3 p-4 md:grid-cols-2 md:p-6 lg:grid-cols-1">
-      {list.map((j) => (
-        <JobPostCard key={j.id} jobPost={j} />
+      {list.map((j, i) => (
+        <div key={j.id} className="animate-in fade-in slide-in-from-bottom-2 duration-500" style={staggerDelay(i)}>
+          <JobPostCard jobPost={j} />
+        </div>
       ))}
     </div>
   )

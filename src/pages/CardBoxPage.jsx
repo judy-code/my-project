@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useAppState } from '@/hooks/useAppState'
 import { EmptyState } from '@/components/common/EmptyState'
+import { staggerDelay } from '@/lib/utils'
 import { CardBoxRow } from '@/components/cardbox/CardBoxRow'
 import { FolderManagerSheet } from '@/components/cardbox/FolderManagerSheet'
 
@@ -51,7 +52,11 @@ export default function CardBoxPage() {
               {!list.length ? (
                 <EmptyState text={t.emptyText} />
               ) : (
-                list.map((item) => <CardBoxRow key={item.id} talent={item} tab={t.value} />)
+                list.map((item, i) => (
+                  <div key={item.id} className="animate-in fade-in slide-in-from-bottom-1 duration-500" style={staggerDelay(i)}>
+                    <CardBoxRow talent={item} tab={t.value} />
+                  </div>
+                ))
               )}
             </TabsContent>
           )

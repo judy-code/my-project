@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { useAppState } from '@/hooks/useAppState'
 import { EmptyState } from '@/components/common/EmptyState'
+import { staggerDelay } from '@/lib/utils'
 import { InviteRow } from '@/components/invites/InviteRow'
 import { SentInviteRow } from '@/components/invites/SentInviteRow'
 import { FollowNotificationRow } from '@/components/invites/FollowNotificationRow'
@@ -39,16 +40,20 @@ export default function InvitesPage() {
           {pending.length > 0 && (
             <>
               <div className="pt-3 pb-1 text-xs text-muted-foreground">待回應 {pending.length} 則</div>
-              {pending.map((inv) => (
-                <InviteRow key={inv.id} invite={inv} />
+              {pending.map((inv, i) => (
+                <div key={inv.id} className="animate-in fade-in slide-in-from-bottom-1 duration-500" style={staggerDelay(i)}>
+                  <InviteRow invite={inv} />
+                </div>
               ))}
             </>
           )}
           {done.length > 0 && (
             <>
               <div className="pt-4 pb-1 text-xs text-muted-foreground">已處理</div>
-              {done.map((inv) => (
-                <InviteRow key={inv.id} invite={inv} />
+              {done.map((inv, i) => (
+                <div key={inv.id} className="animate-in fade-in slide-in-from-bottom-1 duration-500" style={staggerDelay(i)}>
+                  <InviteRow invite={inv} />
+                </div>
               ))}
             </>
           )}
@@ -58,7 +63,11 @@ export default function InvitesPage() {
           {!sentInvites.length ? (
             <EmptyState text="尚無已發送的邀請" />
           ) : (
-            sentInvites.map((inv) => <SentInviteRow key={inv.id} invite={inv} />)
+            sentInvites.map((inv, i) => (
+              <div key={inv.id} className="animate-in fade-in slide-in-from-bottom-1 duration-500" style={staggerDelay(i)}>
+                <SentInviteRow invite={inv} />
+              </div>
+            ))
           )}
         </TabsContent>
 
@@ -66,7 +75,11 @@ export default function InvitesPage() {
           {!receivedFollows.length ? (
             <EmptyState text="尚無關注通知" />
           ) : (
-            receivedFollows.map((f) => <FollowNotificationRow key={f.id} follow={f} />)
+            receivedFollows.map((f, i) => (
+              <div key={f.id} className="animate-in fade-in slide-in-from-bottom-1 duration-500" style={staggerDelay(i)}>
+                <FollowNotificationRow follow={f} />
+              </div>
+            ))
           )}
         </TabsContent>
       </Tabs>
