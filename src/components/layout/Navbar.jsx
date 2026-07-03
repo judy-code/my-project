@@ -52,7 +52,7 @@ export function Navbar() {
         <SheetContent side="left" className="w-72 gap-0 p-0" showCloseButton={false}>
           <SheetTitle className="sr-only">導覽選單</SheetTitle>
           <div className="flex h-full flex-col">
-            <Link to="/explore" className="px-5 py-5" onClick={() => setMenuOpen(false)}>
+            <Link to="/" className="px-5 py-5" onClick={() => setMenuOpen(false)}>
               <Logo size={24} />
             </Link>
             <nav className="flex flex-1 flex-col gap-1 px-3">
@@ -94,7 +94,7 @@ export function Navbar() {
         </SheetContent>
       </Sheet>
 
-      <Link to="/explore" className="mr-1 flex items-center px-1.5 md:mr-6">
+      <Link to="/" className="mr-1 flex items-center px-1.5 md:mr-6">
         <Logo size={22} />
       </Link>
 
