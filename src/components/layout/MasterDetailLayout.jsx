@@ -13,7 +13,9 @@ export function MasterDetailLayout({ list, detailActive, emptyState, children })
       </div>
       <div
         className={cn(
-          'fixed inset-0 z-10 flex flex-col overflow-y-auto bg-background transition-transform duration-300',
+          // top-14 對齊 Navbar 的 h-14：手機版 fixed 面板若用 inset-0 會從 y=0 開始，
+          // 疊在 sticky Navbar（z-20）下方且擋住點擊，因此固定面板的頂部要讓出 Navbar 高度
+          'fixed inset-x-0 top-14 bottom-0 z-10 flex flex-col overflow-y-auto bg-background transition-transform duration-300',
           'lg:static lg:z-auto lg:flex-1 lg:translate-x-0',
           detailActive ? 'translate-x-0' : 'translate-x-full'
         )}

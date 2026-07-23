@@ -5,6 +5,7 @@ import { Heart, Send, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { AppAvatar } from '@/components/common/AppAvatar'
 import { EmptyState } from '@/components/common/EmptyState'
+import { RiskBadge } from '@/components/common/RiskBadge'
 import { useFilteredTalents } from '@/hooks/useFilteredTalents'
 import { useAppDispatch } from '@/hooks/useAppDispatch'
 import { useRequireAuth } from '@/hooks/useRequireAuth'
@@ -80,6 +81,12 @@ function SwipeCard({ talent, isFollower, isTop, stackIndex, onDecide, onTap }) {
       {isTop && drag.x < -30 && (
         <div className="absolute top-6 right-6 rotate-[12deg] rounded-md border-2 border-muted-foreground px-2 py-1 text-sm font-bold text-muted-foreground">
           跳過
+        </div>
+      )}
+      {isTop && (
+        // 擋掉 pointerdown 冒泡，避免點徽章時觸發卡片拖曳手勢
+        <div className="absolute top-5 right-5 z-10" onPointerDown={(e) => e.stopPropagation()}>
+          <RiskBadge talent={talent} />
         </div>
       )}
       <div className="flex items-start gap-3">

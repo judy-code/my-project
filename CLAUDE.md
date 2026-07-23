@@ -42,8 +42,52 @@ CoTrace 是一個以「求才方」為主動、透過名片交換機制建立經
 | **探索視角切換**（我是人才／我想求才） | ✅ 已實作 | PRD 6.3，`PerspectiveSwitcher`（探索頁左上角，左側滑出選單）可切換 `state.explorePerspective`；切到「我是人才」時 `ExplorePage` 改渲染 `JobPostGrid` 瀏覽 `jobCardPool`，點卡片進 `/explore/job/:jobId` 詳情頁（含「關注」CTA，見下一列）。⚠️ 已知落差：`FilterDrawer` 未依視角切換欄位標籤／未套用預算篩選（需求名片預算是自由格式文字，非人選名片 salary 那種數字） |
 | **關注（Follow）** | ✅ 已實作 | PRD 6.4：需求名片詳情頁（`/explore/job/:jobId`）有「關注」按鈕（`FOLLOW_JOB_CARD`/`UNFOLLOW_JOB_CARD`，`state.followedJobCards`，同一需求不可重複關注）；設定頁「關注中的需求」可取消關注；Sender 端「通知→關注」用 `data/receivedFollows.js` 模擬別人關注自己需求名片的通知（跟 `invites.js` 一樣是預先 seed 的模擬資料，見下方說明），點頭像/名稱可查看人選名片並執行邀請/收藏/跳過；探索頁「我想求才」視角的人才列表會把 `receivedFollows` 中的關注人才排到前面（`TalentGrid.jsx`），符合 PRD 6.4.2「優先顯示」 |
 | **通知系統重構** | ✅ 已實作 | PRD 6.5，`/invites` 頁面已改標題【通知】、底部導覽/側邊欄改鈴鐺 icon，拆「邀請/已邀請/關注」三子頁籤；「已邀請」子頁籤用 `sentInvites` 狀態顯示真實資料；「關注」子頁籤用 `receivedFollows` 顯示模擬通知（見上一列說明） |
-| **面談與評分機制**（風險警示徽章、面談邀請卡片、多維度評分流程） | ❌ 未實作 | PRD 第五章整章，全新功能面，量體不小於 `BuildWizard` |
+| **面談與評分機制**（風險警示徽章、面談邀請卡片、多維度評分流程） | ⚠️ UI 已實作，計算邏輯未實作 | PRD 第五章，見下方「面談與評分機制（UI-only）」一節 |
 | 後臺管理模組 | ❌ 未實作 | MVP 前端優先，符合預期 |
+
+### 面談與評分機制（UI-only，2026-07-23）
+
+PRD 第五章原文（日期/時間/形式/地點欄位、5.4.4 評分維度與正負選項清單、5.5 風險分數公式等）
+直接從 PRD Notion 匯出 HTML 用 PowerShell `[System.IO.File]::ReadAllText` + regex 去標籤取出
+（該檔案 59MB 幾乎全是內嵌截圖的 base64，`grep`/一般文字工具處理不了整行超長字串，改用
+`.NET` 字串 API 直接用 `IndexOf` 定位「五.面談與評價機制」到「六.」之間的區段再去標籤）。
+依使用者「只要頁面可以呈現 UI 就好」的要求，這輪**只做 UI 與可操作的假流程，不做真正的
+加權風險分數計算**（PRD 5.5 本身也標註「待更新」）：
+
+- **風險警示徽章**（PRD 5.2）：`components/common/RiskBadge.jsx`，圓形徽章＋`CircleAlert`
+  圖示，顏色對應 `data/riskLevels.js` 的 `low`/`medium`/`high`/`insufficient`（評價數 <5 一律
+  顯示「資料不足」，見 `resolveRiskLevel()`）。掛在 `TalentCard.jsx`（探索頁桌面版卡片）、
+  `TalentSwipeStack.jsx`（探索頁手機版滑動卡片）、`CardView.jsx`（名片詳情頁／各處名片彈窗）
+  三處卡片右上角；`talent` 沒有 `riskLevel`/`reviewCount` 資料時直接不渲染（目前只有
+  `talentPool.js` 4 筆範例人才有 seed 這組欄位）。點擊開啟 `ResponsiveModal`，顯示各維度
+  正/負比例（%）長條圖＋系統彙整描述文字，**不顯示個別評論**（符合 PRD 5.2.3 去識別化要求）。
+  **注意**：徽章元件用 `<span role="button">` 而不是 `<button>`——因為它常被放進本身就是
+  `<button>` 的卡片（`TalentCard`）裡，HTML 不允許 button 巢狀 button，用 `<button>` 會在
+  console 噴 `validateDOMNesting` 錯誤（第一輪 Playwright 驗證時抓到，已修正）。
+- **面談邀請**（PRD 5.3）：入口只在對話視窗（`ChatThreadView.jsx` 頭部「邀約面談」按鈕），
+  對應 PRD「僅設於對話視窗內」。`InterviewInviteFormDialog.jsx` 填日期/時間/形式（單選：
+  現場/視訊/電話）/地點連結，送出後對話中生成 `InterviewInviteCard.jsx`（比照
+  `UnlockRequestBubble` 的做法：一個對話串同時間只追蹤一筆 `thread.interviewInvite`，
+  不是存進 `msgs` 陣列，見 `appReducer.js` 的 `SEND_INTERVIEW_INVITE`）。
+- **評分機制**（PRD 5.4）：這個 App 沒有獨立的 Talent 帳號，聊天室裡的使用者永遠是
+  Sender 視角，所以**只做 Sender 對 Talent 評分這一側**（Talent 評 Sender 的維度資料仍留在
+  `data/interviewOptions.js` 的 `TALENT_RATING_DIMENSIONS`，供未來若真的开放切換視角時使用）。
+  `InterviewRatingDialog.jsx` 是「單題導引式介面」：Step0 出席與否（選「未出席」會分支到
+  「是否提前告知」，選完直接提早結束評分流程，不進入後面的維度題，對應 PRD 5.4.3 的
+  分支邏輯）→ Step1 準時狀況（單選）→ Step2–5 四個評分維度（尊重度/專業度/穩定度/契合度，
+  各自「正面」「負面」兩組可複選標籤，`TagSelectGroup` 共用元件），送出後
+  `SUBMIT_INTERVIEW_RATING` action 把 `thread.interviewInvite.senderRated` 設成
+  `true`，卡片改顯示「已完成評分」。**沒有做**：PRD 5.5 的加權風險分數計算（公式本身
+  PRD 標註「待更新」）、真正依評分結果動態更新名片風險等級（風險徽章顏色目前是
+  `talentPool.js` 寫死的 seed 值，不會因為使用者送出評分而變動）、真正的日期觸發
+  （PRD 5.4.1「面談日當晚跨日」系統推送，這裡改用 `InterviewInviteCard` 上一顆明確標示
+  「（示範）標記面談已結束」的按鈕手動觸發，模擬日期已過）。
+- **修了一個連帶發現的既有 bug**：`MasterDetailLayout.jsx` 手機版 fixed 詳情面板原本是
+  `fixed inset-0`，會從螢幕最頂端（y=0）開始，跟 `Navbar`（`sticky top-0 z-20`，高度
+  `h-14`=56px）重疊，導致 `/explore/:id`、`/chat/:threadId` 手機版詳情頁最上面 56px
+  的內容（含這次新增的「邀約面談」按鈕）被 Navbar 蓋住、點不到。改成
+  `fixed inset-x-0 top-14 bottom-0`，讓面板從 Navbar 底部開始。這是 Playwright
+  驗證這次新功能時連帶抓到的既有版面 bug，不是這次新功能本身的邏輯問題。
 
 ## 技術棧
 
@@ -109,7 +153,8 @@ npm run preview   # 預覽 build 產出
 路由額外包在 `components/layout/RequireAuth.jsx` 這層 layout route 底下：未登入時
 `<Outlet/>` 直接替換成 `LoginPromptCard`（「請先登入」提示卡＋登入按鈕），保留網址可
 分享／重新整理，不用 redirect。彈窗類 UI（登入/註冊、聯絡資料編輯、實名認證、
-篩選面板、婉拒原因、資料夾選擇／管理、發送邀請）**都不是路由**，而是各元件內部的
+篩選面板、婉拒原因、資料夾選擇／管理、發送邀請、風險徽章回饋摘要、邀約面談、面談評分）
+**都不是路由**，而是各元件內部的
 `useState` 控制開關，用 `ResponsiveModal` 統一處理桌面 Dialog／手機 Drawer 的切換
 （登入/註冊彈窗 `AuthDialog` 例外，開關狀態放在全域 `state.authDialogOpen`，見下一節）。
 
@@ -175,6 +220,10 @@ MySQL，也能快速登入查看通知／名片夾／聊天／設置等需要登
 - 設置：`SET_CONTACT_DATA`、`SET_VERIFIED`、`SET_PERMISSION`
 - 需求名片：`ADD_JOB_CARD`（超過 `MAX_JOB_CARDS` 上限時忽略，UI 也會先擋）、
   `UPDATE_JOB_CARD`、`DELETE_JOB_CARD`
+- 面談與評分（UI-only，見上方「面談與評分機制」一節）：`SEND_INTERVIEW_INVITE`／
+  `COMPLETE_INTERVIEW`／`SUBMIT_INTERVIEW_RATING`，都寫在對話串的 `thread.interviewInvite`
+  欄位（單一物件，非陣列，同一對話同時間只追蹤一筆面談邀請，比照 `unlockSent`/`unlockDone`
+  的做法）
 
 **如何新增一個狀態區塊**：在 `initialState.js` 加初始值 → 在 `appReducer.js` 加對應的
 `case` 分支 → 在需要的元件用 `useAppState()` 讀取、`useAppDispatch()` 觸發 action。
@@ -324,7 +373,9 @@ server/         Email 帳號登入用的後端 API（Express + MySQL），見上
 
 | 檔案 | 內容 |
 |---|---|
-| `talentPool.js` | 探索頁「我想求才」視角可瀏覽的 4 位範例人才 |
+| `talentPool.js` | 探索頁「我想求才」視角可瀏覽的 4 位範例人才；2026-07 起每筆額外帶 `riskLevel`/`reviewCount`/`feedbackDistribution`/`feedbackSummary`，供風險警示徽章（見「面談與評分機制」一節）demo 用，4 筆分別對應低/中/高風險與資料不足四種狀態 |
+| `riskLevels.js` | 風險等級定義（`low`/`medium`/`high`/`insufficient`）與 `resolveRiskLevel()` |
+| `interviewOptions.js` | 面談形式選項、出席/準時度問題文字、Sender／Talent 雙向評分維度與正負選項（PRD 5.4.4 原文轉錄，目前只有 Sender 評 Talent 這側有接上 UI，Talent 側資料留著備用） |
 | `jobCardPool.js` | 探索頁「我是人才」視角可瀏覽的 4 張範例需求名片（別人發布的，非自己的 `jobCards`） |
 | `receivedFollows.js` | 2 筆模擬「別人關注你需求名片」的通知，`talentId` 對應 `talentPool.js` 既有人才 |
 | `invites.js` | 3 筆範例邀請（含完整的邀請人名片資料） |
@@ -409,7 +460,8 @@ server/         Email 帳號登入用的後端 API（Express + MySQL），見上
 
 ### PRD 0.9.0 新功能（尚未排入開發，見上方「PRD 對照與目前實作範圍」）
 
-- **面談與評分機制**：風險警示徽章（名片詳情頁＋探索卡片右上角，綠/黃/紅三色）、
-  對話視窗內「邀約面談」按鈕與面談邀請卡片、面談後單題導引式多維度評分問卷、
-  加權風險分數計算與回饋分布呈現（去識別化，不顯示個別評論）
+- **面談與評分機制**：UI 已於 2026-07-23 完成（見上方「面談與評分機制（UI-only）」一節），
+  尚未實作的是 PRD 5.5 加權風險分數計算（公式本身標註「待更新」）、評分送出後動態更新
+  名片風險等級（目前風險徽章顏色是 `talentPool.js` 寫死的 seed 值）、真正的面談日期
+  觸發評分通知（目前用手動「（示範）標記面談已結束」按鈕代替）
 - **邀請每日額度限制**、**名片夾 200 張上限**、**黑名單容量規則**：現有邏輯尚未加上限制

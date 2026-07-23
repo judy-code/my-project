@@ -244,9 +244,45 @@
   要嘛先 `npm install --no-save playwright`（不會動到 `package.json`／`package-lock.json`）
   再執行，兩者都測過可行
 
+## 2026-07-23 — 全站頁面/按鈕巡查 ＋ 面談與評分機制（UI-only）
+
+使用者要求「以資深前端和 UIUX 設計師」身分確認每一頁功能都能正常使用，按鈕若指向還沒做的頁面就
+補上，一切依設計系統走。過程：
+
+- **靜態＋動態雙重巡查**：先 `grep` 全專案 `navigate()` 呼叫、`TODO`/`即將推出` 等佔位字樣、
+  空的 `onClick` handler，全部乾淨；再用背景 agent 開 `npx vite --host 127.0.0.1` + Playwright，
+  在訪客／登入、桌面／手機四種狀態下把每個路由、分頁、彈窗、抽屜實際點過一輪。**結論**：
+  除了 PRD 第五章「面談與評價機制」完全沒有任何 UI 入口（`CLAUDE.md` 本來就有記錄這點）以外，
+  其餘功能都正常運作、無 console error、無空白頁。
+- **PRD 第五章原文取得**：PRD 來源是 59MB 的 Notion 匯出 HTML（幾乎全是內嵌截圖 base64，一行
+  超長字串），`grep`／一般文字工具處理不了，改用 PowerShell `[System.IO.File]::ReadAllText`
+  配 `.IndexOf("五.面談與評價機制")` 抓區間、regex 去標籤取出純文字，才拿到 5.1–5.7 完整內容
+  （風險等級定義、面談邀請欄位、單題導引式評分流程分支、Sender/Talent 雙向評分維度與正負選項、
+  5.5 風險分數公式——這節 PRD 本身標註「待更新」）
+- **實作範圍（依使用者「只要 UI 能呈現就好」的要求，刻意不做真正的計算邏輯）**：見
+  `CLAUDE.md`「面談與評分機制（UI-only）」一節的完整說明，重點摘要：
+  - `RiskBadge`（風險警示徽章）掛在探索頁桌面卡片／手機滑動卡片／名片詳情頁三處，
+    `talentPool.js` 4 筆範例人才分別 seed 低/中/高風險與資料不足四種狀態
+  - `ChatThreadView` 新增「邀約面談」按鈕 → 表單 → 對話中生成面談邀請卡片 → 「(示範)標記
+    面談已結束」→「填寫面談評分」開單題導引式評分流程（`InterviewRatingDialog`，含
+    PRD 5.4.3 的「未出席→是否提前告知」提早結束分支）
+  - 全部是既有共用元件（`StepIndicator`／`TagSelectGroup`／`RadioOptionList`／
+    `ResponsiveModal`）的組合，沒有新增互動元件種類
+- **Playwright 驗證時連帶抓到兩個 bug，已修正**：
+  1. `RiskBadge` 原本用 `<button>`，塞進本身就是 `<button>` 的 `TalentCard` 裡違反 HTML
+     巢狀規則、console 噴 `validateDOMNesting` 錯誤 → 改成 `<span role="button" tabIndex={0}>`
+  2. **既有 bug**（不是這次新功能造成的）：`MasterDetailLayout.jsx` 手機版 fixed 詳情面板
+     `fixed inset-0` 從 y=0 開始，跟 `sticky top-0 z-20` 的 Navbar（56px 高）重疊，導致
+     `/explore/:id`、`/chat/:threadId` 手機版最上面 56px 的內容點不到（這次新增的「邀約面談」
+     按鈕剛好就在那個位置，才被發現）→ 改成 `fixed inset-x-0 top-14 bottom-0`
+- `npm run lint` + `npm run build` 皆過；兩輪 Playwright 驗證（功能本身 + 兩個 bug 修正後回歸測試）
+  皆確認正常，桌面 1280×900／手機 390×844
+
 ## 下一步待完成（建議優先順序，細節見 `CLAUDE.md` →「PRD 對照與目前實作範圍」）
 
-1. **面談與評分機制**：風險徽章 + 面談邀請卡片 + 多維度評分問卷 —— 量體最大，PRD 第五章整章，建議排最後（目前唯一還沒動工的 PRD 0.9.0 新功能大項）
+1. **面談與評分機制的計算邏輯**：PRD 5.5 加權風險分數公式（PRD 本身標註「待更新」）、評分送出後
+   動態更新名片風險等級（目前風險徽章顏色是 `talentPool.js` 寫死的 seed 值）、真正的面談日期
+   觸發評分通知（目前用手動「(示範)標記面談已結束」按鈕代替）——UI 部分已於 2026-07-23 完成
 2. 補規則類小項：邀請每日額度限制、名片夾 200 張上限、黑名單容量
 3. 較小的收尾項：`FilterDrawer` 依探索視角切換欄位標籤／支援需求名片預算篩選
 

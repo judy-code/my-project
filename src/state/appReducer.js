@@ -192,6 +192,39 @@ export function appReducer(state, action) {
       }
     }
 
+    // ---- 面談邀請與評分（PRD 5.3／5.4） ----
+    // 一個對話串同一時間僅追蹤一筆面談邀請，做法比照 unlockSent/unlockDone 那組欄位
+    case 'SEND_INTERVIEW_INVITE': {
+      return {
+        ...state,
+        chatThreads: state.chatThreads.map((t) =>
+          t.id === action.threadId
+            ? { ...t, interviewInvite: { ...action.payload, status: 'scheduled', senderRated: false } }
+            : t
+        ),
+      }
+    }
+    case 'COMPLETE_INTERVIEW': {
+      return {
+        ...state,
+        chatThreads: state.chatThreads.map((t) =>
+          t.id === action.threadId && t.interviewInvite
+            ? { ...t, interviewInvite: { ...t.interviewInvite, status: 'completed' } }
+            : t
+        ),
+      }
+    }
+    case 'SUBMIT_INTERVIEW_RATING': {
+      return {
+        ...state,
+        chatThreads: state.chatThreads.map((t) =>
+          t.id === action.threadId && t.interviewInvite
+            ? { ...t, interviewInvite: { ...t.interviewInvite, senderRated: true, ratingResult: action.result } }
+            : t
+        ),
+      }
+    }
+
     // ---- 設置 / 聯絡資料 ----
     case 'SET_CONTACT_DATA':
       return { ...state, contactData: { ...state.contactData, ...action.payload } }

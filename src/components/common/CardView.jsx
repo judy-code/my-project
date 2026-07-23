@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge'
 import { AppAvatar } from '@/components/common/AppAvatar'
 import { LockedSection } from '@/components/common/LockedSection'
+import { RiskBadge } from '@/components/common/RiskBadge'
 import { getSalaryHint } from '@/lib/salary'
 
 /**
@@ -12,7 +13,8 @@ export function CardView({ talent, showWant }) {
   const salaryText = getSalaryHint({ salary: t.salary, salaryUnit: t.salaryUnit, salaryMinus: t.salaryMinus })
 
   return (
-    <div>
+    <div className="relative">
+      <RiskBadge talent={t} className="absolute top-0 right-0" />
       <div className="mb-4 flex items-start gap-3">
         <AppAvatar name={t.name} initial={t.ini} colorIndex={t.ai || 0} size={56} className="text-lg" />
         <div className="min-w-0">

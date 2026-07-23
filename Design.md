@@ -83,6 +83,16 @@ utility class（例如 `--primary` 會產生 `bg-primary`／`text-primary`／`bo
   價格金額改用 `text-primary` 強調，讓氣泡本身、金額強調、`accept` 按鈕
   （`bg-primary`）三者色階分明但全落在品牌色家族內
 
+### 面談風險警示色（2026-07-23 新增，PRD 5.2）
+
+`--status-risk-low`/`--status-risk-medium`/`--status-risk-high`/`--status-risk-insufficient`
+四個新 token，供 `RiskBadge` 實心圓形徽章底色使用（白色圖示疊在上面，不是文字，所以不用
+額外驗算 WCAG 文字對比度，只要求非文字對比 ≥3:1 的圖形辨識度）：低風險沿用
+`--status-verified-fg`（`#55603a`，橄欖綠）同色階、高風險沿用 `--primary`/`--destructive`
+（`#b64937`，品牌赤陶橙，語意上「紅＝警示」跟「品牌主色」剛好重疊不衝突）、中風險另取一支
+深琥珀金 `#8a6116`（避免跟「待回應」的暖橙 `--status-pending-fg`／品牌赤陶橙撞色）、
+資料不足用中性的 `--muted-foreground` 同值灰棕 `#7d6c5c`。
+
 ### 狀態色：保留語意、調和飽和度
 
 `--status-pending-*`（待回應，暖橙）與 `--status-verified-*`（已實名驗證，綠）**保留**
@@ -360,6 +370,24 @@ import 名稱，版面/尺寸/位置完全不用動）：
   - `EmptyState`／`WelcomePage`：插圖與文字都有 `fade-in`／`zoom-in` 進場，
     `PuzzleHeroIllustration` 額外套用 `animate-gentle-float`（`src/index.css` 定義的
     緩慢浮動 keyframe，尊重 `prefers-reduced-motion`）
+
+## 面談風險徽章與面談邀請卡片（2026-07-23 新增）
+
+延續「彈窗策略」一節的既有規則，這次新增的三個彈窗全部走 `ResponsiveModal`
+（風險徽章的「回饋摘要分布」、邀約面談表單、面談評分導引流程），沒有新增彈窗變體。
+
+- **風險徽章的定位**：PRD 5.2.1 要求「顯示於名稱旁，整體介面的右上角，不與名片代碼
+  共用同一行」，實作用 `absolute top-* right-*` 疊在卡片/名片標頭的相對定位容器上
+  （`TalentCard`／`TalentSwipeStack`／`CardView` 三處各自的外層加 `relative`），
+  不是跟名字塞進同一個 flex row，符合「不共用同一行」的要求
+- **面談評分的「單題導引式介面」**：沿用 `StepIndicator`（原本是建立名片精靈在用）
+  表達進度，多選題沿用 `TagSelectGroup`／`TagChip`（原本是價值觀/技能標籤在用），
+  單選題沿用 `RadioOptionList`（原本是工作風格問卷在用）——**這次沒有新增任何互動元件**，
+  全部是既有共用元件的組合應用，維持「元件對照表」一節列出的元件不重複發明
+- **「不影響/影響風險標記」的分支流程**：PRD 5.4.3 面談出席狀態的分支（未出席時是否
+  提前告知，會提早結束評分流程）用元件內部的 `phase` 狀態機處理（`attendance` →
+  `notice`/`punctuality` → `dimension` → `ended`），不是額外拆路由或額外的彈窗——單一
+  `ResponsiveModal` 內用條件渲染切換不同階段的問題內容
 
 ## 已知的技術限制（非 bug，記錄供未來參考）
 

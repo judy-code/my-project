@@ -57,6 +57,10 @@
     --color-status-verified-bg: var(--status-verified-bg);
     --color-status-verified-border: var(--status-verified-border);
     --color-status-verified-fg: var(--status-verified-fg);
+    --color-status-risk-low: var(--status-risk-low);
+    --color-status-risk-medium: var(--status-risk-medium);
+    --color-status-risk-high: var(--status-risk-high);
+    --color-status-risk-insufficient: var(--status-risk-insufficient);
 }
 
 :root {
@@ -107,6 +111,15 @@
     --status-verified-bg: #eef0e4;
     --status-verified-border: #a8ad8c;
     --status-verified-fg: #55603a;
+
+    /* 面談風險警示徽章（PRD 5.2）：實心圓形徽章底色（白色驚嘆號圖示疊在上面），
+       低風險沿用已驗證徽章的橄欖綠、高風險沿用品牌赤陶橙（primary/destructive），
+       中風險另取一支不與「待回應」暖橙、品牌赤陶橙撞色的深琥珀金；資料不足（評價數<5）
+       用中性的 muted-foreground 灰棕，與警示色階區隔 */
+    --status-risk-low: #55603a;
+    --status-risk-medium: #8a6116;
+    --status-risk-high: #b64937;
+    --status-risk-insufficient: #7d6c5c;
 }
 
 @layer base {

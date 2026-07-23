@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
 import { AppAvatar } from '@/components/common/AppAvatar'
+import { RiskBadge } from '@/components/common/RiskBadge'
 
 export function TalentCard({ talent, isFollower }) {
   const navigate = useNavigate()
@@ -9,8 +10,9 @@ export function TalentCard({ talent, isFollower }) {
     <button
       type="button"
       onClick={() => navigate(`/explore/${talent.id}`)}
-      className="w-full rounded-xl border border-border p-4 text-left transition-colors hover:border-primary"
+      className="relative w-full rounded-xl border border-border p-4 text-left transition-colors hover:border-primary"
     >
+      <RiskBadge talent={talent} className="absolute top-3 right-3" />
       <div className="mb-2.5 flex items-start gap-3">
         <AppAvatar name={talent.name} initial={talent.ini} colorIndex={talent.ai} size={44} />
         <div className="min-w-0 flex-1">
